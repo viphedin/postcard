@@ -71,7 +71,7 @@ let jetMoves = [];
 let jetMoving = false;
 let mouseCursor = 1;
 let rocketContaner = new Container();
-let rocketSpeed = 2;
+let rocketSpeed = 1.5;
 let hatSprite = null;
 
 let scale = window.innerWidth > 600 ? 0.8 : (window.innerWidth > 440 ? 0.6 : 0.4);
@@ -227,6 +227,7 @@ app.loader.load(() => {
             if (macroCollision(hatSprite, jet, 0.2)) {
                 app.stage.removeChild(hatSprite);
                 hatSprite = null;
+                rocketSpeed = 0;
 
                 drawDialog(thing, bgSprite);
             } else {
@@ -359,19 +360,14 @@ function drawDialog(thing, bgSprite) {
     thing.closePath();
 
     const filter = new BlurFilter();
-    jet.filters = [filter];
 
     bgSprite.filters = [filter];
-
-    clouds.forEach((value, index) => {
-        clouds[index].filters = [filter];
-    });
 
     const richText = new Text('Rich text with a lot of options and across multiple lines', style);
     richText.x = left + 10;
     richText.y = top + 10;
 
-app.stage.addChild(richText);
+    app.stage.addChild(richText);
 }
 
 function stop() {
