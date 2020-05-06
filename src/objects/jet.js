@@ -15,6 +15,7 @@ export class Jet {
             rightBack : null
         }
 
+        this._jetType = '';
         this._jet = null;
         this._mc = null;
     
@@ -35,6 +36,8 @@ export class Jet {
         this.app.loader.add('mc', './assets/resources/mc.json');
 
         this.bonus = 0;
+
+        this.tween = null;
 
         window.addEventListener(
             "keydown", (event) => {
@@ -60,11 +63,13 @@ export class Jet {
                 switch(event.code) {
                     case 'KeyA':
                     case 'ArrowLeft':
+                        this.direction = this.direction == -1 ? 0 : this.direction;
+                        event.preventDefault();
+                        break;              
                     case 'KeyD':
                     case 'ArrowRight':
-                        this.direction = 0;
+                        this.direction = this.direction == 1 ? 0 : this.direction;
                         event.preventDefault();
-                        this.doMove()
                         break;
                 }
             }, false
@@ -88,7 +93,8 @@ export class Jet {
             rightBack : this.getJetSprite(5, -1)
         }
 
-        this._jet = this._jets.left;
+        this._jet = this._jets.base;
+        this._jetType = 'base';
         
         this.app.stage.addChild(this._jet);
 
@@ -137,6 +143,7 @@ export class Jet {
         jet.anchor.set(0.5);
         jet.x = this.app.screen.width / 2;
         jet.y = this.app.screen.height - 200 * this.scale;
+        jet.animationSpeed = 1;
         jet.loop = false;
 
         return jet;
@@ -145,7 +152,7 @@ export class Jet {
     tick(delta) {
         if (this.isCollision) {
             this._jet.filters = [
-                new OutlineFilter(8 * this.scale, 0xff6666)
+                new OutlineFilter(4 * this.scale, 0x00ee33)
             ];
             this.app.stage.addChild(this._mc);
             this._mc.gotoAndPlay(0);
@@ -188,18 +195,21 @@ export class Jet {
 
     onClickUp(event) {
         this.direction = 0;
-        this.doMove();
     }
 
     doMove() {
-        if (!this.moving && this.direction) {
+        if (this.moving) {
+            return;
+        }
+
+        if (this.direction) {
             let x = this.jet.x + this.direction * 20 * this.scale;
     
             if (x > this.indent && x < this.app.screen.width - this.indent) {
                 this.moving = true;
 
                 if (this.lastDirection != this.direction) {
-                    this.setJet(this.direction == 1 ? this._jets.right : this._jets.left);
+                    this.setJet(this.direction == 1 ? 'right' : 'left');
                 }
 
                 gsap.to(this._jet, { x: x, ease: "none", duration: 0.1, onComplete: () => {
@@ -212,17 +222,17 @@ export class Jet {
                     this.lastDirection = this.direction;
                 }
             }
-        } else if (!this.moving && this.lastDirection) {
-            this.setJet(this.lastDirection == 1 ? this._jets.rightBack : this._jets.leftBack);
-
+        } else if (this.lastDirection) {
+            this.setJet(this.lastDirection == 1 ? 'rightBack' : 'leftBack');
             this._jet.gotoAndPlay(0);
-        } else if (!this.moving) {
-            this.setJet(this._jets.base);
+            this.lastDirection = 0;
         }
     }
 
-    setJet(jet) {
-        if (jet != this.jet) {
+    setJet(type) {
+        if (type != this._jetType) {
+            console.log(type, this._jetType);
+            let jet = this._jets[type];
             jet.x = this._jet.x;
             jet.y = this._jet.y;
             jet.filters = this._jet.filters;
@@ -230,6 +240,7 @@ export class Jet {
             this.app.stage.removeChild(this._jet);
 
             this._jet = jet;
+            this._jetType = type;
 
             this.app.stage.addChild(this._jet);
         }
