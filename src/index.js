@@ -33,9 +33,12 @@ import { Graphics } from '@pixi/graphics';
 import { BlurFilter } from '@pixi/filter-blur';
 import { Text, TextStyle } from '@pixi/text';
 
+import { Jet } from './objects/jet.js';
+import { Background } from './objects/background.js';
+
 import gsap from 'gsap';
 
-let screenWidth = window.innerWidth > 1000 ? 1000 : window.innerWidth;
+let screenWidth = window.innerWidth > 600 ? 600 : window.innerWidth;
 let realWidth = screenWidth * window.devicePixelRatio;
 
 const app = new Application({
@@ -44,12 +47,13 @@ const app = new Application({
     //resolution: window.devicePixelRatio
 });
 
+let scale = screenWidth / 600;
+
 document.body.appendChild(app.view)
 
-app.loader.add('bg', './assets/resources/earth' + (screenWidth < 442 ? '.small' : '') + '.jpg');
-app.loader.add('cloud1', './assets/resources/cloud.png');
-app.loader.add('cloud2', './assets/resources/cloud2.png');
-app.loader.add('cloud3', './assets/resources/cloud3.png');
+const jet = new Jet(app, scale);
+const background = new Background(app, scale);
+
 app.loader.add('rocket1', './assets/resources/rocket1.png');
 app.loader.add('rocket2', './assets/resources/rocket2.png');
 app.loader.add('smile1', './assets/resources/smile1.png');
@@ -57,24 +61,16 @@ app.loader.add('smile2', './assets/resources/smile2.png');
 app.loader.add('smile3', './assets/resources/smile3.png');
 app.loader.add('hat', './assets/resources/hat.png');
 
-app.loader.add('fighter', './assets/resources/fighter.json');
-app.loader.add('mc', './assets/resources/mc.json');
-
 const buttonRight = "url('./assets/resources/arrow-right.png'),auto";
 const buttonLeft = "url('./assets/resources/arrow-left.png'),auto";
 
 let clouds = [];
 let cloudFilters = [];
-let cloudContaner = new Container();
-let jet = null;
-let jetMoves = [];
-let jetMoving = false;
+
 let mouseCursor = 1;
 let rocketContaner = new Container();
-let rocketSpeed = 1.5;
+let rocketSpeed = 0;
 let hatSprite = null;
-
-let scale = window.innerWidth > 600 ? 0.8 : (window.innerWidth > 440 ? 0.6 : 0.4);
 
 const style = new TextStyle({
     fontFamily: 'sans-serif',
@@ -96,13 +92,12 @@ app.renderer.plugins.interaction.cursorStyles.default = function () {
 }
 
 app.loader.load(() => {
+    background.append();
+    jet.append();
 
     app.stage.interactive = true;
-    app.stage.on('pointerdown', onClick);
-    app.stage.on('pointerup', onClickUp);
-
     app.stage.on('mousemove', function(event) {
-        const next = jet.x > event.data.global.x ? -1 : 1;
+        const next = jet.jet.x > event.data.global.x ? -1 : 1;
         if (next != mouseCursor) {
             mouseCursor = next;
             app.renderer.plugins.interaction.setCursorMode('pointer');
@@ -111,75 +106,9 @@ app.loader.load(() => {
         }
     });
 
-    const bgSprite = TilingSprite.from('bg', app.screen.width, app.screen.height);
-
-    bgSprite.anchor.set(0);
-
-    app.stage.addChild(bgSprite);
-
-    bgSprite.tilePosition.x = 0;
-    bgSprite.tilePosition.y = 0;
-
-    cloudContaner.x = 0;
-    cloudContaner.y = 0;
-    app.stage.addChild(cloudContaner);
-
     rocketContaner.x = 0;
     rocketContaner.y = 0;
     app.stage.addChild(rocketContaner);
-
-    clouds.push(null);
-    cloudFilters.push(null);
-    createCloud(clouds.length - 1);
-    let cloudCount = 1;
-
-    let interval = setInterval(() => {
-        clouds.push(null);
-        cloudFilters.push(null);
-        createCloud(clouds.length - 1);
-        cloudCount++;
-
-        if (cloudCount == 10) {
-            clearInterval(interval);
-        }
-    }, 400);
-
-    const frames = [];
-
-    for (let i = 0; i < 30; i++) {
-        const val = i < 10 ? `0${i}` : i;
-
-        frames.push(Texture.from(`rollSequence00${val}.png`));
-    }
-    
-    jet = new AnimatedSprite(frames);
-
-    jet.scale.set(scale);
-    jet.x = app.screen.width / 2;
-    jet.y = app.screen.height - (300 * scale);
-    jet.anchor.set(0.5);
-    jet.animationSpeed = 0.8;
-    jet.loop = false;
-
-    app.stage.addChild(jet);
-
-    const mcFrames = [];
-
-    for (let i = 1; i <= 27; i++) {
-        mcFrames.push(Texture.from(`Explosion_Sequence_A ${i}.png`));
-    }
-    
-    let mc = new AnimatedSprite(mcFrames);
-
-    mc.scale.set(scale);
-    mc.x = 0;
-    mc.y = 0;
-    mc.anchor.set(0.5);
-    mc.animationSpeed = 1;
-    mc.loop = false;
-    mc.onLoop = () => { app.stage.removeChild(mc); }
-
-    const outlineFilter = new OutlineFilter(5 * scale, 0xff6666);
 
     runRocket();
 
@@ -189,35 +118,23 @@ app.loader.load(() => {
 
     app.stage.addChild(thing);
 
-    let wait = 10;
-
     app.ticker.add((delta) => {
+        background.tick(delta);
         let collision = false;
+        let collisionX, collisionY;
 
         rocketContaner.children.forEach((value, key) => {
-            if (macroCollision(value, jet, 0.8)) {
+            if (macroCollision(value, jet.jet, 0.8)) {
                 collision = true;
-                mc.x = value.x;
-                mc.y = value.y - value.width / 2;
+                collisionX = value.x;
+                collisionY = value.y + value.height / 2;
                 rocketContaner.removeChild(value);
             }
         });
 
         if (collision) {
-            jet.filters = [outlineFilter];
-            app.stage.addChild(mc);
-            mc.gotoAndPlay(0);
-            wait = 20;
-        } else {
-            wait--;
-
-            if (wait == 0) {
-                jet.filters = null;
-            }
+            jet.collision(collisionX, collisionY);
         }
-
-        mc.y += 10;
-        bgSprite.tilePosition.y += 0.3;
 
         if (hatSprite == null && rocketSpeed >= 2) {
             hatSprite = createHat();
@@ -229,7 +146,7 @@ app.loader.load(() => {
                 hatSprite = null;
                 rocketSpeed = 0;
 
-                drawDialog(thing, bgSprite);
+                //drawDialog(thing, bgSprite);
             } else {
                 hatSprite.y += 2;
 
@@ -242,6 +159,8 @@ app.loader.load(() => {
                 hatSprite.rotation -= 0.037 * delta;
             }
         }
+
+        jet.tick(delta);
     });
 
 });
