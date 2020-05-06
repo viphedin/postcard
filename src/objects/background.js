@@ -29,7 +29,6 @@ export class Background {
     }
 
     append() {
-        console.log('append');
         this.bgSprite = TilingSprite.from('bg', this.app.screen.width, this.app.screen.height);
         this.bgSprite.anchor.set(0);
         

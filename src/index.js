@@ -35,11 +35,11 @@ import { Text, TextStyle } from '@pixi/text';
 
 import { Jet } from './objects/jet.js';
 import { Background } from './objects/background.js';
+import { Stars } from './objects/stars.js';
 
 import gsap from 'gsap';
 
 let screenWidth = window.innerWidth > 600 ? 600 : window.innerWidth;
-let realWidth = screenWidth * window.devicePixelRatio;
 
 const app = new Application({
     width: screenWidth,
@@ -53,16 +53,7 @@ document.body.appendChild(app.view)
 
 const jet = new Jet(app, scale);
 const background = new Background(app, scale);
-
-app.loader.add('rocket1', './assets/resources/rocket1.png');
-app.loader.add('rocket2', './assets/resources/rocket2.png');
-app.loader.add('smile1', './assets/resources/smile1.png');
-app.loader.add('smile2', './assets/resources/smile2.png');
-app.loader.add('smile3', './assets/resources/smile3.png');
-app.loader.add('hat', './assets/resources/hat.png');
-
-const buttonRight = "url('./assets/resources/arrow-right.png'),auto";
-const buttonLeft = "url('./assets/resources/arrow-left.png'),auto";
+const stars = new Stars(app, scale);
 
 let clouds = [];
 let cloudFilters = [];
@@ -87,31 +78,19 @@ const style = new TextStyle({
     wordWrapWidth: 440 * scale,
 });
 
-app.renderer.plugins.interaction.cursorStyles.default = function () {
-    app.renderer.plugins.interaction.interactionDOMElement.style.cursor = mouseCursor == 1 ? buttonRight : buttonLeft;
-}
 
 app.loader.load(() => {
     background.append();
+    stars.append();
     jet.append();
 
-    app.stage.interactive = true;
-    app.stage.on('mousemove', function(event) {
-        const next = jet.jet.x > event.data.global.x ? -1 : 1;
-        if (next != mouseCursor) {
-            mouseCursor = next;
-            app.renderer.plugins.interaction.setCursorMode('pointer');
-            app.renderer.plugins.interaction.setCursorMode('default');
-            app.renderer.plugins.interaction.update();
-        }
-    });
-
+/*
     rocketContaner.x = 0;
     rocketContaner.y = 0;
     app.stage.addChild(rocketContaner);
 
     runRocket();
-
+*/
     let thing = new Graphics();
     thing.x = 0;
     thing.y = 0;
@@ -120,9 +99,12 @@ app.loader.load(() => {
 
     app.ticker.add((delta) => {
         background.tick(delta);
-        let collision = false;
-        let collisionX, collisionY;
+        stars.tick(delta);
 
+        if (stars.checkCollision(jet.jet)) {
+            jet.collision();
+        }
+/*
         rocketContaner.children.forEach((value, key) => {
             if (macroCollision(value, jet.jet, 0.8)) {
                 collision = true;
@@ -159,7 +141,7 @@ app.loader.load(() => {
                 hatSprite.rotation -= 0.037 * delta;
             }
         }
-
+*/
         jet.tick(delta);
     });
 
@@ -220,15 +202,21 @@ function runRocket() {
 }
 
 function createRocket() {
+    const frames = [];
+            
+    for (let i = 5; i >= 1; i--) {
+        frames.push(
+            Texture.from(`star${i}.png`)
+        );
+    }
 
-    let id = Math.floor(1 + Math.random() * 3);
-
-    let rocket = Sprite.from('smile' + id);
-
-    rocket.scale.set(scale);
+    let rocket = new AnimatedSprite(frames);
+    rocket.animationSpeed = 0.05;
+    rocket.scale.set(scale * 0.7);
     rocket.x = 40 + Math.random() * (app.screen.width - 40);
     rocket.y = - 60 * scale;
     rocket.anchor.set(0.5);
+    rocket.play();
 
     rocketContaner.addChild(rocket);
 

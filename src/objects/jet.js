@@ -35,8 +35,6 @@ export class Jet {
 
         this.app.loader.add('mc', './assets/resources/mc.json');
 
-        this.bonus = 0;
-
         this.tween = null;
 
         window.addEventListener(
@@ -126,9 +124,7 @@ export class Jet {
 
         const i = from < to ? 1 : -1;
 
-        console.log(from, to, i);
         while (from != to) {
-            console.log(from, to);
             const val = from < 10 ? `0${from}` : from;
     
             frames.push(
@@ -154,8 +150,10 @@ export class Jet {
             this._jet.filters = [
                 new OutlineFilter(4 * this.scale, 0x00ee33)
             ];
+/*
             this.app.stage.addChild(this._mc);
             this._mc.gotoAndPlay(0);
+*/
             this.wait = 20;
 
             this.isCollision = false;
@@ -168,22 +166,10 @@ export class Jet {
                 this._jet.filters = null;
             }
         }
-
-        this.bonus += delta / 5;
-
-        //console.log('bonus', this.bonus);
     }
 
-    collision(x, y) {
-        this._mc.x = x;
-        this._mc.y = y;
+    collision() {
         this.isCollision = true;
-
-        this.bonus -= 100;
-
-        if (this.bonus < 0) {
-            this.bonus = 0;
-        }
     }
 
     onClick(event) {
@@ -231,7 +217,6 @@ export class Jet {
 
     setJet(type) {
         if (type != this._jetType) {
-            console.log(type, this._jetType);
             let jet = this._jets[type];
             jet.x = this._jet.x;
             jet.y = this._jet.y;
