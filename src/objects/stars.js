@@ -62,12 +62,13 @@ export class Stars {
 
     checkCollision(jet) {
         for (let i = 0; i < this.stars.length; i++) {
-            if (this.macroCollision(this.stars[i].sprite, jet, 0.7)) {
+            if (this.stars[i].score && this.macroCollision(this.stars[i].sprite, jet, 0.7)) {
                 this.stars[i].tween.kill();
 
                 let key = this.stars[i].key;
 
                 this.stars[i].sprite.animationSpeed = 0.3;
+                this.stars[i].score = false;
 
                 this.stars[i].tween = gsap.to(this.stars[i].sprite, { x: this.app.screen.width - 40 * this.scale, y: 60 * this.scale, ease: "none", duration: 1, onComplete: () => {
                     this.deleteStar(key);
@@ -98,13 +99,14 @@ export class Stars {
     
         let star = {
             key: Math.random().toString(36).replace(/[^a-z]+/g, ''),
+            score: true,
             sprite: new AnimatedSprite(frames),
             tween: null
         };
 
         star.sprite.animationSpeed = 0.1;
         star.sprite.scale.set(this.scale * 0.7);
-        star.sprite.x = 60 * this.scale + Math.random() * (this.app.screen.width - 60 * this.scale);
+        star.sprite.x = 40 * this.scale + Math.random() * (this.app.screen.width - 2 * 40 * this.scale);
         star.sprite.y = - 60 * this.scale;
         star.sprite.anchor.set(0.5);
         star.sprite.play();

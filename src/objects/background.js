@@ -17,9 +17,12 @@ export class Background {
 
         this.cloudsCount = 0;
 
-        this.timer = 1000;
+        this.initTimer = 1000;
+        this.timer = 0;
 
         this.isMobile = this.app.screen.width < 450;
+
+        this.step = 0;
 
         this.app.loader.add('bg', './assets/resources/san-francisco' + (this.isMobile ? '.small' : '') + '.jpg');
 
@@ -41,23 +44,30 @@ export class Background {
         this.cloudContaner.y = 0;
 
         this.app.stage.addChild(this.cloudContaner);
+
+        const height = this.isMobile ? 2194 : 3900;
+
+        this.step = (height - this.app.screen.height) / 60 / 40.2;
     }
 
     tick(delta) {
-        this.bgSprite.tilePosition.y += 0.3;
+        this.timer += delta;
 
-        this.initClouds(delta);
+        if (this.timer * 16.66 < 40200) {
+            this.bgSprite.tilePosition.y += this.step * delta;
+
+           this.initClouds(delta);
+        }
     }
 
     initClouds(delta) {
         if (this.cloudsCount < 10) {
-            this.timer += delta;
+            this.initTimer += delta;
 
-            if (this.timer > 20) {
-                console.log('add cloud');
+            if (this.initTimer > 20) {
                 this.addCloud();
                 this.cloudsCount++;
-                this.timer = 0;
+                this.initTimer = 0;
             }
         }
     }

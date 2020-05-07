@@ -17,7 +17,6 @@ export class Jet {
 
         this._jetType = '';
         this._jet = null;
-        this._mc = null;
     
         this.direction = 0;
         this.lastDirection = 0;
@@ -32,8 +31,6 @@ export class Jet {
         this.scale = scale;
 
         this.app.loader.add('fighter', './assets/resources/fighter.json');
-
-        this.app.loader.add('mc', './assets/resources/mc.json');
 
         this.tween = null;
 
@@ -78,10 +75,6 @@ export class Jet {
         return this._jet;
     }
 
-    get mc() {
-        return this._mc;
-    }
-
     append() {
         this._jets = {
             base: this.getJetSprite(0, 1),
@@ -95,22 +88,6 @@ export class Jet {
         this._jetType = 'base';
         
         this.app.stage.addChild(this._jet);
-
-        const mcFrames = [];
-        
-        for (let i = 1; i <= 27; i++) {
-            mcFrames.push(
-                Texture.from(`Explosion_Sequence_A ${i}.png`)
-            );
-        }
-
-        this._mc = new AnimatedSprite(mcFrames);
-        this._mc.scale.set(this.scale);
-        this._mc.anchor.set(0.5);
-        this._mc.animationSpeed = 1;
-        this._mc.loop = false;
-
-        this.app.stage.addChild(this._mc);
 
         this.app.stage.interactive = true;
         this.app.stage.on('pointerdown', (event) => { this.onClick(event); });
@@ -150,17 +127,12 @@ export class Jet {
             this._jet.filters = [
                 new OutlineFilter(4 * this.scale, 0x00ee33)
             ];
-/*
-            this.app.stage.addChild(this._mc);
-            this._mc.gotoAndPlay(0);
-*/
+
             this.wait = 20;
 
             this.isCollision = false;
         } else {
             this.wait--;
-
-            this._mc.y += 10 * this.scale;
 
             if (this.wait == 0) {
                 this._jet.filters = null;
