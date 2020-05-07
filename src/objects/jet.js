@@ -7,6 +7,11 @@ import gsap from 'gsap';
 export class Jet {
 
     constructor(app, scale) {
+        this.app = app;
+        this.scale = scale;
+
+        this.play = false;
+
         this._jets = {
             base: null,
             left: null,
@@ -27,10 +32,7 @@ export class Jet {
         this.isCollision = null;
         this.wait = null;
 
-        this.app = app;
-        this.scale = scale;
-
-        this.app.loader.add('fighter', './assets/resources/fighter.json');
+        this.app.loader.add('jet', './assets/resources/jet.json');
 
         this.tween = null;
 
@@ -59,11 +61,17 @@ export class Jet {
                     case 'KeyA':
                     case 'ArrowLeft':
                         this.direction = this.direction == -1 ? 0 : this.direction;
+                        if (this.direction == 0) {
+                            this.doMove();
+                        }
                         event.preventDefault();
                         break;              
                     case 'KeyD':
                     case 'ArrowRight':
                         this.direction = this.direction == 1 ? 0 : this.direction;
+                        if (this.direction == 0) {
+                            this.doMove();
+                        }
                         event.preventDefault();
                         break;
                 }
@@ -77,11 +85,11 @@ export class Jet {
 
     append() {
         this._jets = {
-            base: this.getJetSprite(0, 1),
-            left: this.getJetSprite(29, 23),
-            right: this.getJetSprite(0, 6),
-            leftBack: this.getJetSprite(24, 30),
-            rightBack : this.getJetSprite(5, -1)
+            base: this.getJetSprite(5, 6),
+            left: this.getJetSprite(5, 10),
+            right: this.getJetSprite(5, 0),
+            leftBack: this.getJetSprite(9, 4),
+            rightBack : this.getJetSprite(1, 6)
         }
 
         this._jet = this._jets.base;
@@ -93,7 +101,7 @@ export class Jet {
         this.app.stage.on('pointerdown', (event) => { this.onClick(event); });
         this.app.stage.on('pointerup', (event) => { this.onClickUp(event); });
 
-        this.indent = Math.floor(this._jet.width / 2);
+        this.indent = Math.floor(this._jet.width / 4);
     }
 
     getJetSprite(from, to) {
@@ -102,17 +110,15 @@ export class Jet {
         const i = from < to ? 1 : -1;
 
         while (from != to) {
-            const val = from < 10 ? `0${from}` : from;
-    
             frames.push(
-                Texture.from(`rollSequence00${val}.png`)
+                Texture.from(`jet${from}.png`)
             );
 
             from += i;
         }
 
         const jet = new AnimatedSprite(frames);
-        jet.scale.set(this.scale * 0.7);
+        jet.scale.set(this.scale * 1.4);
         jet.anchor.set(0.5);
         jet.x = this.app.screen.width / 2;
         jet.y = this.app.screen.height - 200 * this.scale;
@@ -123,21 +129,17 @@ export class Jet {
     }
 
     tick(delta) {
-        if (this.isCollision) {
-            this._jet.filters = [
-                new OutlineFilter(4 * this.scale, 0x00ee33)
-            ];
 
-            this.wait = 20;
+    }
 
-            this.isCollision = false;
-        } else {
-            this.wait--;
+    start() {
+        this.play = true;
+    }
 
-            if (this.wait == 0) {
-                this._jet.filters = null;
-            }
-        }
+    stop() {
+        this.play = false;
+
+        this.setJet('base');
     }
 
     collision() {
@@ -156,7 +158,7 @@ export class Jet {
     }
 
     doMove() {
-        if (this.moving) {
+        if (this.moving || !this.play) {
             return;
         }
 

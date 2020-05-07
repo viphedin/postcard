@@ -8,17 +8,18 @@ import gsap from 'gsap';
 export class Background {
 
     constructor(app, scale) {
-        this.bgSprite = null;
-
         this.app = app;
         this.scale = scale;
+
+        this.play = false;
+
+        this.bgSprite = null;
 
         this.cloudContaner = new Container();
 
         this.cloudsCount = 0;
 
         this.initTimer = 1000;
-        this.timer = 0;
 
         this.isMobile = this.app.screen.width < 450;
 
@@ -29,6 +30,8 @@ export class Background {
         this.app.loader.add('cloud1', './assets/resources/cloud1.png');
         this.app.loader.add('cloud2', './assets/resources/cloud2.png');
         this.app.loader.add('cloud3', './assets/resources/cloud3.png');
+
+        this.tweens = [];
     }
 
     append() {
@@ -48,31 +51,62 @@ export class Background {
         const height = this.isMobile ? 2194 : 3900;
 
         this.step = (height - this.app.screen.height) / 60 / 40.2;
+
+        this.initClouds();
     }
 
     tick(delta) {
-        this.timer += delta;
-
-        if (this.timer * 16.66 < 40200) {
+        if (this.play) {
             this.bgSprite.tilePosition.y += this.step * delta;
-
-           this.initClouds(delta);
         }
     }
 
-    initClouds(delta) {
-        if (this.cloudsCount < 10) {
-            this.initTimer += delta;
+    start() {
+        this.play = true;
 
-            if (this.initTimer > 20) {
-                this.addCloud();
-                this.cloudsCount++;
-                this.initTimer = 0;
-            }
+        this.tweens.map((tween) => {
+            tween.play();
+        });
+    }
+
+    stop() {
+        this.play = false;
+
+        this.tweens.map((tween) => {
+            tween.pause();
+        });
+    }
+
+    initClouds() {
+        let height = this.app.screen.height / 9;
+
+        for (let i = 0; i < 10; i++) {
+            this.tweens.push(null);
+            this.addCloud(this.tweens.length - 1, height * i - height / 2);
         }
     }
 
-    addCloud() {
+    addCloud(key, y) {
+        let cloud = this.createCloud();
+
+        if (this.tweens[key] != null) {
+            this.tweens[key].kill();
+        }
+    
+        this.tweens[key] = gsap.to(cloud, { y: this.app.screen.height + cloud.height, ease: 'none', duration: 3, onComplete: () => {
+            this.cloudContaner.removeChild(cloud);
+            this.addCloud(key);
+        } });
+
+        if (y != null) {
+            this.tweens[key].pause();
+            this.tweens[key].duration(4 / this.app.screen.height * (this.app.screen.height - y));
+            cloud.y = y;
+        }
+
+    }
+
+    createCloud() {
         let id = Math.floor(1 + Math.random() * 3);
    
         let cloud = Sprite.from('cloud' + id);
@@ -82,10 +116,7 @@ export class Background {
         cloud.x = Math.random() * this.app.screen.width;
     
         this.cloudContaner.addChild(cloud);
-    
-        gsap.to(cloud, { y: this.app.screen.height + cloud.height, ease: 'none', duration: 4, onComplete: () => {
-            this.cloudContaner.removeChild(cloud);
-            this.addCloud();
-        } });
+
+        return cloud;
     }
 }

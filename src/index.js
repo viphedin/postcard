@@ -24,6 +24,9 @@ import { SpritesheetLoader } from '@pixi/spritesheet';
 import { Loader } from '@pixi/loaders';
 Loader.registerPlugin(SpritesheetLoader)
 
+import { BitmapFontLoader } from '@pixi/text-bitmap';
+Loader.registerPlugin(BitmapFontLoader);
+
 import { Texture } from '@pixi/core';
 import { Container } from '@pixi/display';
 
@@ -36,6 +39,7 @@ import { Text, TextStyle } from '@pixi/text';
 import { Jet } from './objects/jet.js';
 import { Background } from './objects/background.js';
 import { Stars } from './objects/stars.js';
+import { Game } from './objects/game.js';
 
 import gsap from 'gsap';
 
@@ -49,11 +53,26 @@ const app = new Application({
 
 let scale = screenWidth / 600;
 
-document.body.appendChild(app.view)
+document.getElementById('game').appendChild(app.view);
 
 const jet = new Jet(app, scale);
 const background = new Background(app, scale);
 const stars = new Stars(app, scale);
+const game = new Game(app, scale);
+
+game.registerStart(() => {
+    jet.start();
+    background.start();
+    stars.start();
+})
+
+game.registerStop(() => {
+    jet.stop();
+    background.stop();
+    stars.stop();
+})
+
+game.registerStars(stars);
 
 let clouds = [];
 let cloudFilters = [];
@@ -78,11 +97,13 @@ const style = new TextStyle({
     wordWrapWidth: 440 * scale,
 });
 
+app.loader.add('desyrel', './assets/resources/bitmap-font/desyrel.xml');
 
 app.loader.load(() => {
     background.append();
     stars.append();
     jet.append();
+    game.append();
 
 /*
     rocketContaner.x = 0;
@@ -98,6 +119,7 @@ app.loader.load(() => {
     app.stage.addChild(thing);
 
     app.ticker.add((delta) => {
+        game.tick(delta);
         background.tick(delta);
         stars.tick(delta);
 

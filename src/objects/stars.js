@@ -1,20 +1,19 @@
 import { AnimatedSprite } from '@pixi/sprite-animated';
 import { Texture } from '@pixi/core';
 import { Container } from '@pixi/display';
-import { BitmapFontLoader, BitmapText } from '@pixi/text-bitmap';
-import { Loader } from '@pixi/loaders';
-
-Loader.registerPlugin(BitmapFontLoader);
+import { BitmapText } from '@pixi/text-bitmap';
 
 import gsap from 'gsap';
 
 export class Stars {
 
     constructor(app, scale) {
-        this.stars = [];
-
         this.app = app;
         this.scale = scale;
+
+        this.play = false;
+
+        this.stars = [];
 
         this.starsContaner = new Container();
         this.scoreContaner = new Container();
@@ -22,9 +21,12 @@ export class Stars {
         this.timer = 0;
 
         this.app.loader.add('star', './assets/resources/star.json');
-        app.loader.add('desyrel', './assets/resources/bitmap-font/desyrel.xml');
 
         this.score = 0;
+    }
+
+    getScore() {
+        return this.score;
     }
 
     append() {
@@ -37,9 +39,9 @@ export class Stars {
         this.scoreContaner.y = 0;
         this.app.stage.addChild(this.scoreContaner);
 
-        this.scoreText = new BitmapText('Score: ' + Math.floor(this.score), { font: (Math.floor(55 * this.scale)) + 'px Desyrel', align: 'right' });
+        this.scoreText = new BitmapText('Score: ' + Math.floor(this.score), { font: Math.floor(50 * this.scale) + 'px Desyrel', align: 'right' });
 
-        this.scoreText.x = this.app.screen.width - 40 * this.scale;
+        this.scoreText.x = this.app.screen.width - 20 * this.scale;
         this.scoreText.y = 15 * this.scale;
 
         this.scoreText.anchor.set(1, 0);
@@ -51,12 +53,28 @@ export class Stars {
         this.runStar(delta);
     }
 
-    runStar(delta) {
-        this.timer += delta;
+    start() {
+        this.play = true;
+    }
 
-        if (this.timer > 60 + Math.random() * 50) {
-            this.star();
-            this.timer = 0;
+    stop() {
+        this.play = false;
+
+        this.updateScore();
+
+        this.stars.map((star) => {
+            star.tween.pause();
+        });
+    }
+
+    runStar(delta) {
+        if (this.play) {
+            this.timer += delta;
+
+            if (this.timer > 60 + Math.random() * 50) {
+                this.star();
+                this.timer = 0;
+            }
         }
     }
 
