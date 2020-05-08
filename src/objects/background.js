@@ -77,6 +77,13 @@ export class Background {
         });
     }
 
+    restart() {
+        this.bgSprite.tilePosition.x = 0;
+        this.bgSprite.tilePosition.y = this.app.screen.height;
+
+        this.start();
+    }
+
     initClouds() {
         let height = this.app.screen.height / 9;
 

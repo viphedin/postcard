@@ -12,6 +12,7 @@ export class Game {
 
         this.startCallback = null;
         this.stopCallback = null;
+        this.restartCallback = null;
 
         this.timer = 0;
 
@@ -19,12 +20,20 @@ export class Game {
 
         this.stars = null;
 
+        this.scoreText = null;
+
+        this.end = false;
+
         window.addEventListener(
             "keydown", (event) => {
                 if (!this.play && this.loaded) {
                     switch(event.code) {
                         case 'Space':
-                            this.onClick();
+                            if (this.end) {
+                                this.onRestartClick();
+                            } else {
+                                this.onClick();
+                            }
                             event.preventDefault();
                             break;
                     }
@@ -45,6 +54,16 @@ export class Game {
 
         this.startText.interactive = true;
         this.startText.on('pointerdown', (event) => { this.onClick(event); });
+
+        this.restartText = new BitmapText('PLAY AGAIN', { font: Math.floor(55 * this.scale) + 'px Desyrel', align: 'center' });
+
+        this.restartText.x = this.app.screen.width / 2;
+        this.restartText.y = this.app.screen.height / 6 * 5;
+
+        this.restartText.anchor.set(0.5, 0.5);
+
+        this.restartText.interactive = true;
+        this.restartText.on('pointerdown', (event) => { this.onRestartClick(event); });
 
         this.timeText = new BitmapText('Time: 00.0', { font: Math.floor(50 * this.scale) + 'px Desyrel', align: 'left' });
 
@@ -82,6 +101,18 @@ export class Game {
         }});
     }
 
+    onRestartClick() {
+        let width = this.restartText.width;
+        let height = this.restartText.height;
+
+        gsap.to(this.restartText, { width: width * 0.5, height: height * 0.5, duration: 0.1, onComplete: () => {
+            this.app.stage.removeChild(this.restartText);
+            this.restartText.width = width;
+            this.restartText.height = height;
+            this.restartGame();
+        }});
+    }
+
     start() {
         this.play = true;
     }
@@ -102,6 +133,10 @@ export class Game {
         this.stopCallback = callback;
     }
 
+    registerRestart(callback) {
+        this.restartCallback = callback;
+    }
+
     startGame() {
         this.start();
 
@@ -113,26 +148,50 @@ export class Game {
     stopGame() {
         this.stop();
 
+        this.end = true;
+
         if (this.stopCallback != null) {
             this.stopCallback.call();
         }
 
         const filter = new BlurFilter();
-        filter.blur = 3;
+        filter.blur = 2;
 
         this.app.stage.children.map((item) => {
             item.filters = [filter];
-        })
+        });
 
         if (this.stars != null) {
-            let scoreText = new BitmapText("Great flight!\n\nYOUR SCORE\n" + this.stars.getScore(), { font: Math.floor(70 * this.scale) + 'px Desyrel', align: 'center' });
+            this.scoreText = new BitmapText("GREAT FLIGHT!\n\nYOUR SCORE\n" + this.stars.getScore(), { font: Math.floor(70 * this.scale) + 'px Desyrel', align: 'center' });
 
-            scoreText.x = this.app.screen.width / 2;
-            scoreText.y = this.app.screen.height / 2;
+            this.scoreText.x = this.app.screen.width / 2;
+            this.scoreText.y = this.app.screen.height / 3;
 
-            scoreText.anchor.set(0.5, 0.5);
+            this.scoreText.anchor.set(0.5, 0.5);
 
-            this.app.stage.addChild(scoreText);
+            this.app.stage.addChild(this.scoreText);
+
+            this.app.stage.addChild(this.restartText);
         }
+    }
+
+    restartGame() {
+        if (this.scoreText != null) {
+            this.app.stage.removeChild(this.scoreText);
+        }
+
+        this.end = false;
+        this.timer = 0;
+        this.timeText.text = 'Time: 00.0';
+
+        this.app.stage.children.map((item) => {
+            item.filters = null;
+        });
+
+        if (this.restartCallback != null) {
+            this.restartCallback.call();
+        }
+
+        this.start();
     }
 }

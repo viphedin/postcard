@@ -65,6 +65,24 @@ export class Stars {
         this.stars.map((star) => {
             star.tween.pause();
         });
+
+        this.starsContaner.children.map((star) => {
+            star.stop();
+        })
+    }
+
+    restart() {
+        this.score = 0;
+        this.timer = 0;
+        this.updateScore();
+
+        this.stars.map((star) => {
+            this.starsContaner.removeChild(star.sprite);
+        });
+
+        this.stars = [];
+
+        this.start();
     }
 
     runStar(delta) {

@@ -57,6 +57,12 @@ game.registerStop(() => {
     stars.stop();
 })
 
+game.registerRestart(() => {
+    jet.restart();
+    background.restart();
+    stars.restart();
+})
+
 game.registerStars(stars);
 
 app.loader.add('desyrel', './assets/resources/bitmap-font/desyrel.xml');

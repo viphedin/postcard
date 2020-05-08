@@ -142,6 +142,14 @@ export class Jet {
         this.setJet('base');
     }
 
+    restart() {
+        this.setJet('base');
+        this._jet.x = this.app.screen.width / 2;
+        this._jet.y = this.app.screen.height - 200 * this.scale;
+
+        this.start();
+    }
+
     collision() {
         this.isCollision = true;
     }
