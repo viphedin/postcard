@@ -85,14 +85,32 @@ export class Jet {
 
     append() {
         this._jets = {
-            base: this.getJetSprite(5, 6),
-            left: this.getJetSprite(5, 10),
+            base: this.getJetSprite(5, 8),
+            left: this.getJetSprite(7, 12),
             right: this.getJetSprite(5, 0),
-            leftBack: this.getJetSprite(9, 4),
+            leftBack: this.getJetSprite(11, 6),
             rightBack : this.getJetSprite(1, 6)
         }
 
+        this._jets.leftBack.loop = true;
+        this._jets.leftBack.onLoop = () => {
+            this._jets.leftBack.stop();
+            this.setJet('base');
+            this._jet.play();
+        };
+
+        this._jets.rightBack.loop = true;
+        this._jets.rightBack.onLoop = () => {
+            this._jets.rightBack.stop();
+            this.setJet('base');
+            this._jet.play();
+        };
+        
+        this._jets.base.loop = true;
+
         this._jet = this._jets.base;
+        this._jet.animationSpeed = 0.5;
+        this._jet.loop = true;
         this._jetType = 'base';
         
         this.app.stage.addChild(this._jet);
@@ -118,7 +136,7 @@ export class Jet {
         }
 
         const jet = new AnimatedSprite(frames);
-        jet.scale.set(this.scale * 1.4);
+        jet.scale.set(this.scale);
         jet.anchor.set(0.5);
         jet.x = this.app.screen.width / 2;
         jet.y = this.app.screen.height - 200 * this.scale;
@@ -134,6 +152,8 @@ export class Jet {
 
     start() {
         this.play = true;
+
+        this._jets.base.play();
     }
 
     stop() {
@@ -199,6 +219,7 @@ export class Jet {
 
     setJet(type) {
         if (type != this._jetType) {
+            console.log('set ', type);
             let jet = this._jets[type];
             jet.x = this._jet.x;
             jet.y = this._jet.y;
