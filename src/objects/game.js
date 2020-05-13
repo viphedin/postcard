@@ -27,7 +27,9 @@ export class Game {
         window.addEventListener(
             "keydown", (event) => {
                 if (!this.play && this.loaded) {
-                    switch(event.code) {
+                    let code = event.code ? event.code : event.key;
+
+                    switch(code) {
                         case 'Space':
                             if (this.end) {
                                 this.onRestartClick();

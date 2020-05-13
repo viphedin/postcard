@@ -38,7 +38,9 @@ export class Jet {
 
         window.addEventListener(
             "keydown", (event) => {
-                switch(event.code) {
+                let code = event.code ? event.code : event.key;
+
+                switch(code) {
                     case 'KeyA':
                     case 'ArrowLeft':
                       this.direction = -1;
@@ -57,7 +59,9 @@ export class Jet {
           
         window.addEventListener(
             "keyup", (event) => {
-                switch(event.code) {
+                let code = event.code ? event.code : event.key;
+
+                switch(code) {
                     case 'KeyA':
                     case 'ArrowLeft':
                         this.direction = this.direction == -1 ? 0 : this.direction;
@@ -160,6 +164,7 @@ export class Jet {
         this.play = false;
 
         this.setJet('base');
+        this._jet.stop();
     }
 
     restart() {
@@ -219,7 +224,8 @@ export class Jet {
 
     setJet(type) {
         if (type != this._jetType) {
-            console.log('set ', type);
+            this._jet.stop();
+
             let jet = this._jets[type];
             jet.x = this._jet.x;
             jet.y = this._jet.y;
@@ -231,6 +237,8 @@ export class Jet {
             this._jetType = type;
 
             this.app.stage.addChild(this._jet);
+
+            this._jet.play();
         }
     }
 }
