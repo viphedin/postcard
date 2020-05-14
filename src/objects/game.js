@@ -67,7 +67,7 @@ export class Game {
         this.restartText.interactive = true;
         this.restartText.on('pointerdown', (event) => { this.onRestartClick(event); });
 
-        this.timeText = new BitmapText('Time: 00.0', { font: Math.floor(50 * this.scale) + 'px Desyrel', align: 'left' });
+        this.timeText = new BitmapText('Time: 00', { font: Math.floor(50 * this.scale) + 'px Desyrel', align: 'left' });
 
         this.timeText.x = 20 * this.scale;
         this.timeText.y = 15 * this.scale;
@@ -83,10 +83,10 @@ export class Game {
         if (this.play) {
             this.timer += delta;
 
-            if (this.timer * 16.66 >= 40200) {
+            if (this.timer * 16.66 >= 42000) {
                 this.stopGame();
             } else {
-                let time = Math.ceil(this.timer * 16.66 / 100) / 10;
+                let time = Math.ceil(this.timer * 16.66 / 1000);
 
                 this.timeText.text = 'Time: ' + (time < 10 ? `0${time}` : time);
             }
@@ -184,7 +184,7 @@ export class Game {
 
         this.end = false;
         this.timer = 0;
-        this.timeText.text = 'Time: 00.0';
+        this.timeText.text = 'Time: 00';
 
         this.app.stage.children.map((item) => {
             item.filters = null;

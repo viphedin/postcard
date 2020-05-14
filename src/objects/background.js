@@ -50,7 +50,7 @@ export class Background {
 
         const height = this.isMobile ? 2194 : 3900;
 
-        this.step = (height - this.app.screen.height) / 60 / 40.2;
+        this.step = (height - this.app.screen.height) / 60 / 42;
 
         this.initClouds();
     }
