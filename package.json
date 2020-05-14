@@ -23,6 +23,7 @@
     "copy-webpack-plugin": "^5.1.1",
     "gsap": "^3.2.6",
     "html-webpack-plugin": "^4.3.0",
+    "pixi-sound": "^3.0.4",
     "pixi.js": "^5.2.4",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.43.0",

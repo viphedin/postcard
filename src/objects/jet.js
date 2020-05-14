@@ -1,6 +1,5 @@
 import { AnimatedSprite } from '@pixi/sprite-animated';
 import { Texture } from '@pixi/core';
-import { OutlineFilter } from '@pixi/filter-outline';
 
 import gsap from 'gsap';
 
@@ -33,8 +32,11 @@ export class Jet {
         this.wait = null;
 
         this.app.loader.add('jet', './assets/resources/jet.json');
+        this.app.loader.add('jet_sound', './assets/resources/jet.mp3');
 
         this.tween = null;
+
+        this.sound = null;
 
         window.addEventListener(
             "keydown", (event) => {
@@ -87,7 +89,10 @@ export class Jet {
         return this._jet;
     }
 
-    append() {
+    append(resources) {
+        this.sound = resources.jet_sound.sound;
+        this.sound.volume = 0.2;
+
         this._jets = {
             base: this.getJetSprite(5, 8),
             left: this.getJetSprite(7, 12),
@@ -158,6 +163,8 @@ export class Jet {
         this.play = true;
 
         this._jets.base.play();
+
+        this.sound.play();
     }
 
     stop() {
@@ -165,6 +172,7 @@ export class Jet {
 
         this.setJet('base');
         this._jet.stop();
+        this.sound.stop();
     }
 
     restart() {
@@ -223,6 +231,14 @@ export class Jet {
     }
 
     setJet(type) {
+        if (this.sound) {
+            if (type == 'base') {
+                this.sound.volume = 0.2;
+            } else {
+                this.sound.volume = 0.3;
+            }
+        }
+
         if (type != this._jetType) {
             this._jet.stop();
 

@@ -29,6 +29,8 @@ import { Background } from './objects/background.js';
 import { Stars } from './objects/stars.js';
 import { Game } from './objects/game.js';
 
+import { PIXI } from 'pixi-sound';
+
 let screenWidth = window.innerWidth > 600 ? 600 : window.innerWidth;
 
 const app = new Application({
@@ -67,10 +69,10 @@ game.registerStars(stars);
 
 app.loader.add('desyrel', './assets/resources/bitmap-font/desyrel.xml');
 
-app.loader.load(() => {
+app.loader.load((loader, resources) => {
     background.append();
-    stars.append();
-    jet.append();
+    stars.append(resources);
+    jet.append(resources);
     game.append();
 
     app.ticker.add((delta) => {

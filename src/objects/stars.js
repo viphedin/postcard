@@ -21,6 +21,7 @@ export class Stars {
         this.timer = 0;
 
         this.app.loader.add('star', './assets/resources/star.json');
+        this.app.loader.add('coin', './assets/resources/coin.mp3');
 
         this.score = 0;
     }
@@ -29,7 +30,10 @@ export class Stars {
         return this.score;
     }
 
-    append() {
+    append(resources) {
+        this.sound = resources.coin.sound;
+        this.sound.volume = 0.6;
+
         this.starsContaner.x = 0;
         this.starsContaner.y = 0;
 
@@ -112,6 +116,8 @@ export class Stars {
                 } });
 
                 this.score += 10;
+
+                this.sound.play();
 
                 return true;
             }
